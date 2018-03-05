@@ -14,23 +14,35 @@ private String website;
 private String writingScore;
 private String mathScore;
 private String readingScore;
+    private String dbn;
+
 
 public School(JSONObject schoolObject, String type){
     try {
         if (type.equalsIgnoreCase("school")){
             this.schoolName = schoolObject.getString("school_name");
             this.website = schoolObject.getString("website");
+            this.dbn = schoolObject.getString("dbn");
         } else {
             this.schoolName = schoolObject.getString("school_name");
             this.writingScore = schoolObject.getString("sat_writing_avg_score");
             this.mathScore = schoolObject.getString("sat_math_avg_score");
             this.readingScore = schoolObject.getString("sat_critical_reading_avg_score");
+            this.dbn = schoolObject.getString("dbn");
         }
 
     } catch (JSONException e) {
         e.printStackTrace();
     }
 }
+
+    public String getDbn() {
+        return dbn;
+    }
+
+    public void setDbn(String dbn) {
+        this.dbn = dbn;
+    }
 
     public String getWritingScore() {
         return writingScore;

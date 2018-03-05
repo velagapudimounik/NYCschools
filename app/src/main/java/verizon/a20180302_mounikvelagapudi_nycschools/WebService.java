@@ -27,14 +27,12 @@ import verizon.a20180302_mounikvelagapudi_nycschools.ModelClasses.School;
  * Created by mounikvelagapudi on 03/03/18.
  */
 
+/* This class does network operations and returns the response */
 public class WebService extends AsyncTask<Void, Void, String> {
 
-
-    // private  Context mContext;
     private static final String VOLLEY_TAG = "VOLLEY_GLOBALS";
     private final Context context;
     private final RecyclerView recycle;
-    private final String type;
     int responseCode;
     String method;
     String url;
@@ -42,16 +40,18 @@ public class WebService extends AsyncTask<Void, Void, String> {
     String progressText = null;
     ProgressDialog progress = null;
     HttpURLConnection conn;
+    private ServiceListener serviceListener;
 
-    public WebService(Context applicationContext, RecyclerView recycle, String method, String url, String progressText, String type) {
+    public WebService(Context applicationContext, RecyclerView recycle, ServiceListener serviceListener, String method, String url, String progressText) {
         this.context = applicationContext;
         this.method = method;
         this.url = url;
         this.progressText = progressText;
         this.recycle = recycle;
-        this.type = type;
+        this.serviceListener = serviceListener;
     }
 
+    // Checking Internet connection
     public static boolean isOnline(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
@@ -63,7 +63,7 @@ public class WebService extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPreExecute() {
-        //  progress = (progressText != null) ? ProgressDialog.show(mContext, progressText, "Please wait...", true) : null;
+        //    progress = (progressText != null) ? ProgressDialog.show(context, progressText, "Please wait...", true) : null;
     }
 
     @Override
@@ -123,44 +123,21 @@ public class WebService extends AsyncTask<Void, Void, String> {
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     protected void onPostExecute(String respon) {
-        ArrayList<School> schools;
+
         if (respon != "") {
+
+            if (respon != null && respon.length() > 2)
+                /* Appending the response to the interface and appending it from required classes */
+                serviceListener.onServiceComplete(respon);
+            else serviceListener.onServiceCancel("Communication Failed");
+
             try {
-                System.out.println("response :  " + respon);
-                System.out.println("response.toString() :  " + respon.toString());
-
-                JSONTokener jsonToken = new JSONTokener(respon);
-                JSONArray jsonArray = new JSONArray(jsonToken);
-
-                System.out.println(jsonArray.length());
-
-                schools = new ArrayList<School>();
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    schools.add(new School(jsonArray.getJSONObject(i), type));
-                }
-
-                CustomAdapter adapter = new CustomAdapter(context, schools, type);
-                recycle.setAdapter(adapter);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
                 if (progress != null)
                     progress.dismiss();
-                if (conn != null)
-                    conn.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(context, "Exception in code", Toast.LENGTH_SHORT).show();
             }
-        } else {
-            Log.d(VOLLEY_TAG, "Response null");
-        }
-
-        try {
-            if (progress != null)
-                progress.dismiss();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(context, "Exception in code", Toast.LENGTH_SHORT).show();
         }
     }
-
 }
